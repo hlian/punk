@@ -1,25 +1,41 @@
 module Main where
 
+import qualified Data.ByteString.Char8 as C
+
 import BasePrelude
-import Control.Exception.Base
+import Data.ByteString
 import Network.Socket hiding (recv)
 import Network.Socket.ByteString
 
-run conn = do
-  ok <- recv conn 1024
-  print ok
+data Rq = Rq { p :: ByteString, h :: [(ByteString, ByteString)] } deriving (Show)
 
-sisyphus asocket =
-  bracket (accept asocket) (\(conn, _) -> close conn) $ \(conn, _) -> do
-    mm <- recv conn 1024
-    print mm
+trim = C.filter (\c -> c /= ' ' && c /= '\r')
+
+elemAt :: Int -> [a] -> Maybe a
+elemAt _ []     = Nothing
+elemAt 0 (x:_)  = Just x
+elemAt i (_:xs) = elemAt (i-1) xs
+
+header s =
+  let parts = C.split ':' s in
+  (elemAt 0 parts, elemAt 1 parts)
+
+request s =
+  let (head:rest) = C.split '\n' s
+      parts = C.split ' ' head in
+  Rq (parts !! 1) [(i, trim j) | (Just i, Just j) <- header <$> rest]
+
+l skt =
+  bracket (accept skt) (close . fst) $ \(c, _) -> do
+    incoming <- recv c 1024
+    print (request incoming)
 
 main' port = do
-  asocket <- socket AF_INET Stream defaultProtocol
-  setSocketOption asocket ReuseAddr 1
-  bindSocket asocket (SockAddrInet port iNADDR_ANY)
-  listen asocket 2
-  forever (sisyphus asocket)
+  skt <- socket AF_INET Stream defaultProtocol
+  setSocketOption skt ReuseAddr 1
+  bindSocket skt (SockAddrInet port iNADDR_ANY)
+  listen skt 2
+  forever (l skt)
 
 main = do
   main' 3001

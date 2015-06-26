@@ -19,11 +19,13 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
   exposed-modules:     Punk
-  extensions:          OverloadedStrings
 
 executable punk
   main-is: Main.hs
   hs-source-dirs: src
+  extensions:          OverloadedStrings,
+                       NoImplicitPrelude
   build-depends:       base <4.9,
                        base-prelude,
+                       bytestring,
                        network
