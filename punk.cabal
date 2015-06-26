@@ -4,22 +4,26 @@
 name:                punk
 version:             1.0
 synopsis:            the haskell web microframework
--- description:         
 homepage:            https://github.com/hlian/punk
 license:             BSD3
 license-file:        LICENSE
 author:              Hao Lian
 maintainer:          hi@haolian.org
--- copyright:           
--- category:            
 build-type:          Simple
 extra-source-files:  readme
 cabal-version:       >=1.10
 
 library
-  -- exposed-modules:     
-  -- other-modules:       
-  -- other-extensions:    
-  build-depends:       base >=4.8 && <4.9
+  build-depends:       base <4.9,
+                       network
   hs-source-dirs:      src
   default-language:    Haskell2010
+  exposed-modules:     Punk
+  extensions:          OverloadedStrings
+
+executable punk
+  main-is: Main.hs
+  hs-source-dirs: src
+  build-depends:       base <4.9,
+                       base-prelude,
+                       network
